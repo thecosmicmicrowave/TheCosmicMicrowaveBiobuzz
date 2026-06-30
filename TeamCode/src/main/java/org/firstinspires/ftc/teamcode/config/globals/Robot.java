@@ -45,4 +45,12 @@ public class Robot {
 
         follower.update();
     }
+
+    public double getLoopTimeMs() {
+        return loopTime;
+    }
+
+    public double getLoopTimeHz() {
+        return 1000 / loopTime;
+    }
 }
