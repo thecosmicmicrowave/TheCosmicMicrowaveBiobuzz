@@ -18,32 +18,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * DriveToPose — drives to a target pose and finishes when Pedro reports !isBusy().
- * <p>
- * This command uses the Ivy command system and requires the Follower, ensuring
- * that multiple drive commands do not conflict.
- * <p>
- * Always pair with .until(condition) or similar if a timeout is needed,
- * though Pedro pathing usually handles timeouts internally via path constraints.
- * <p>
- * Usage examples:
- * <p>
- *   // Straight line, linear heading, full speed
- *   new DriveToPose(follower, Poses.SCORE_CLOSE)
- * <p>
- *   // Straight line, tangential heading
- *   new DriveToPose(follower, Poses.SCORE_CLOSE, HeadingMode.TANGENTIAL)
- * <p>
- *   // Bezier curve through waypoints, tangential heading. Last pose is the target.
- *   new DriveToPose(follower, HeadingMode.TANGENTIAL, 0.8, Poses.PGP_MID, Poses.PGP_COLLECT)
- */
 public class DriveToPose implements Command {
 
     public enum HeadingMode {
-        LINEAR,         // Interpolates heading from start to end
-        TANGENTIAL,     // Heading follows the curve direction
-        TANGENTIAL_REV  // Tangential but reversed
+        LINEAR,
+        TANGENTIAL,
+        TANGENTIAL_REV
     }
 
     private final Follower follower;
@@ -55,24 +35,15 @@ public class DriveToPose implements Command {
     private final boolean holdEnd;
     private final Set<Object> requirements;
 
-    // ─── Constructors — Straight Line ─────────────────────────────────────────
-
-    /** Straight line, linear heading, full speed, holds end. */
     public DriveToPose(Follower follower, Pose target) {
         this(follower, target, HeadingMode.LINEAR, 1.0, true);
     }
-
-    /** Straight line, linear heading, custom speed. */
     public DriveToPose(Follower follower, Pose target, double maxSpeed) {
         this(follower, target, HeadingMode.LINEAR, maxSpeed, true);
     }
-
-    /** Straight line, chosen heading mode, custom speed, holds end. */
     public DriveToPose(Follower follower, Pose target, HeadingMode headingMode, double maxSpeed) {
         this(follower, target, headingMode, maxSpeed, true);
     }
-
-    /** Full parameter constructor for straight lines. */
     public DriveToPose(Follower follower, Pose target, HeadingMode headingMode, double maxSpeed, boolean holdEnd) {
         this.follower = follower;
         this.targetPose = target;
@@ -84,13 +55,6 @@ public class DriveToPose implements Command {
         this.requirements = new HashSet<>(Collections.singletonList(follower));
     }
 
-    // ─── Constructors — Bezier Curve ──────────────────────────────────────────
-
-    /**
-     * Bezier curve through control points ending at the last waypoint.
-     * The robot's current position is used as the start of the curve.
-     * @param waypoints [control1, control2, ..., targetPose]
-     */
     public DriveToPose(Follower follower, HeadingMode headingMode, double maxSpeed, Pose... waypoints) {
         if (waypoints == null || waypoints.length == 0) throw new IllegalArgumentException("Waypoints cannot be empty");
         this.follower = follower;
@@ -102,11 +66,6 @@ public class DriveToPose implements Command {
         this.holdEnd = true;
         this.requirements = new HashSet<>(Collections.singletonList(follower));
     }
-
-    /**
-     * Bezier curve with a custom HeadingInterpolator.
-     * @param waypoints [control1, control2, ..., targetPose]
-     */
     public DriveToPose(Follower follower, HeadingInterpolator interpolator, double maxSpeed, Pose... waypoints) {
         if (waypoints == null || waypoints.length == 0) throw new IllegalArgumentException("Waypoints cannot be empty");
         this.follower = follower;
@@ -118,8 +77,6 @@ public class DriveToPose implements Command {
         this.holdEnd = true;
         this.requirements = new HashSet<>(Collections.singletonList(follower));
     }
-
-    // ─── Ivy Lifecycle ────────────────────────────────────────────────────────
 
     @Override
     public Set<Object> requirements() {
@@ -152,20 +109,17 @@ public class DriveToPose implements Command {
         Path pathObj;
 
         if (controlPoints != null && controlPoints.length > 0) {
-            // Build: [start, ...controls, target]
             Pose[] allPoses = new Pose[controlPoints.length + 2];
             allPoses[0] = from;
             System.arraycopy(controlPoints, 0, allPoses, 1, controlPoints.length);
             allPoses[allPoses.length - 1] = targetPose;
             pathObj = new Path(new BezierCurve(allPoses));
         } else {
-            // Straight line
             pathObj = new Path(new BezierLine(from, targetPose));
         }
 
         applyHeading(pathObj, from);
 
-        // Build a PathChain and follow it
         PathChain chain = follower.pathBuilder()
                 .addPath(pathObj)
                 .build();
@@ -175,7 +129,6 @@ public class DriveToPose implements Command {
 
     @Override
     public void execute() {
-        // Movement is updated by the Follower (usually in Robot.periodic() or another thread)
     }
 
     @Override
@@ -190,7 +143,6 @@ public class DriveToPose implements Command {
         }
     }
 
-    // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private void applyHeading(Path path, Pose from) {
         if (customInterpolator != null) {
