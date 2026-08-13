@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.config.util.Alliance;
 
 import java.util.List;
 
-public class Robot {
+public class Robot{
     public final Arm arm;
     public final Intake intake;
     public final Follower follower;
