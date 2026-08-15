@@ -34,6 +34,23 @@ public class DriveToPose implements Command {
     private final double maxSpeed;
     private final boolean holdEnd;
     private final Set<Object> requirements;
+    private final PathChain prebuiltChain;
+
+    public DriveToPose(Follower follower, PathChain chain, double maxSpeed) {
+        this(follower, chain, maxSpeed, true);
+    }
+
+    public DriveToPose(Follower follower, PathChain chain, double maxSpeed, boolean holdEnd) {
+        this.follower = follower;
+        this.targetPose = null;
+        this.controlPoints = null;
+        this.headingMode = null;
+        this.customInterpolator = null;
+        this.maxSpeed = maxSpeed;
+        this.holdEnd = holdEnd;
+        this.requirements = new HashSet<>(Collections.singletonList(follower));
+        this.prebuiltChain = chain;
+    }
 
     public DriveToPose(Follower follower, Pose target) {
         this(follower, target, HeadingMode.LINEAR, 1.0, true);
@@ -53,6 +70,7 @@ public class DriveToPose implements Command {
         this.maxSpeed = maxSpeed;
         this.holdEnd = holdEnd;
         this.requirements = new HashSet<>(Collections.singletonList(follower));
+        this.prebuiltChain = null;
     }
 
     public DriveToPose(Follower follower, HeadingMode headingMode, double maxSpeed, Pose... waypoints) {
@@ -65,6 +83,7 @@ public class DriveToPose implements Command {
         this.maxSpeed = maxSpeed;
         this.holdEnd = true;
         this.requirements = new HashSet<>(Collections.singletonList(follower));
+        this.prebuiltChain = null;
     }
     public DriveToPose(Follower follower, HeadingInterpolator interpolator, double maxSpeed, Pose... waypoints) {
         if (waypoints == null || waypoints.length == 0) throw new IllegalArgumentException("Waypoints cannot be empty");
@@ -76,6 +95,7 @@ public class DriveToPose implements Command {
         this.maxSpeed = maxSpeed;
         this.holdEnd = true;
         this.requirements = new HashSet<>(Collections.singletonList(follower));
+        this.prebuiltChain = null;
     }
 
     @Override
@@ -105,6 +125,11 @@ public class DriveToPose implements Command {
 
     @Override
     public void start() {
+        if (prebuiltChain != null) {
+            follower.followPath(prebuiltChain, maxSpeed, holdEnd);
+            return;
+        }
+
         Pose from = follower.getPose();
         Path pathObj;
 
