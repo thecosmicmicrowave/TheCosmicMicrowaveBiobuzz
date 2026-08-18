@@ -14,10 +14,15 @@ public class Routines {
     public static final Map<String, Function<Robot, Command>> ALL = new LinkedHashMap<>();
 
     static {
-        ALL.put("Example", robot -> {
+        ALL.put("test", robot -> {
             Paths p = new Paths(robot.follower, robot.alliance);
             return sequential(
-                    new DriveToPose(robot.follower, p.line1, 1.0)
+                    new DriveToPose(robot.follower, p.line1, 1.0),
+                    new DriveToPose(robot.follower, p.line2, 1.0),
+                    new DriveToPose(robot.follower, p.line3, 1.0),
+                    new DriveToPose(robot.follower, p.line4, 1.0),
+                    new DriveToPose(robot.follower, p.line5, 1.0),
+                    new DriveToPose(robot.follower, p.line6, 1.0)
             );
         });
         // additional named routines go here
