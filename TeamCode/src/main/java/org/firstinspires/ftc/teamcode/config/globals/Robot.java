@@ -5,15 +5,13 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.config.commandbase.subsystems.Arm;
-import org.firstinspires.ftc.teamcode.config.commandbase.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.config.util.Alliance;
 
 import java.util.List;
 
 public class Robot{
-    public final Arm arm;
-    public final Intake intake;
+    //public final Arm arm;
+    //public final Intake intake;
     public final Follower follower;
     public Alliance alliance;
     private final List<LynxModule> hubs;
@@ -21,8 +19,8 @@ public class Robot{
     public double loops = 0, lastLoop = 0, loopTime = 0;
     public Robot(HardwareMap hw, Alliance alliance) {
         this.alliance = alliance;
-        arm = new Arm(hw);
-        intake = new Intake(hw);
+        //arm = new Arm(hw);
+        //intake = new Intake(hw);
         follower = PedroConstants.createFollower(hw);
         hubs = hw.getAll(LynxModule.class);
         for (LynxModule hub : hubs) {
